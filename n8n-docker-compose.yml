@@ -1,0 +1,55 @@
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: n8n_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${DB_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${DB_POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - n8n_network
+
+  n8n:
+    image: n8nio/n8n:latest
+      #image: n8nio/n8n:1.76.1
+    container_name: n8n
+    restart: always
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=${N8N_BASIC_AUTH_ACTIVE}
+      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD}
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=${DB_POSTGRES_HOST}
+      - DB_POSTGRESDB_PORT=${DB_POSTGRES_PORT}
+      - DB_POSTGRESDB_DATABASE=${DB_POSTGRES_DB}
+      - DB_POSTGRESDB_USER=${DB_POSTGRES_USER}
+      - DB_POSTGRESDB_PASSWORD=${DB_POSTGRES_PASSWORD}
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+      - GENERIC_TIMEZONE=${GENERIC_TIMEZONE}
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - VUE_APP_URL_BASE_API=https://n8n.domain.com/
+      - N8N_DEFAULT_TRUST_PROXY=true
+      - N8N_TRUST_PROXY_HEADER=true
+      - N8N_TRUST_PROXY=loopback,linklocal,uniquelocal
+      - N8N_HOST=n8n.domain.com
+      - N8N_PROTOCOL=https
+      - WEBHOOK_URL=https://n8n.domain.com/
+    ports:
+      - "5678:5678"
+    networks:
+      - n8n_network
+    depends_on:
+      - postgres
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+networks:
+  n8n_network:
+
+volumes:
+  postgres_data:
+  n8n_data:
