@@ -1,0 +1,46 @@
+services:
+  openproject:
+    image: openproject/openproject:15.5.1
+    container_name: open-project-container
+    restart: always
+    environment:
+      - OPENPROJECT_HTTPS=${OPENPROJECT_HTTPS}
+      - OPENPROJECT_HSTS=${OPENPROJECT_HSTS}
+      - OPENPROJECT_HOST__NAME=${OPENPROJECT_HOST__NAME}
+      - OPENPROJECT_DATABASE__ADAPTER=postgresql
+      - OPENPROJECT_DATABASE__HOST=openproject-db
+      - OPENPROJECT_DATABASE__USER=${POSTGRES_USER}
+      - OPENPROJECT_DATABASE__PASSWORD=${POSTGRES_PASSWORD}
+      - OPENPROJECT_DATABASE__NAME=${POSTGRES_DB}
+    depends_on:
+      - openproject-db
+    expose:
+      - "80"
+      - "8080"
+    volumes:
+      - open_project_data:/var/openproject
+    networks:
+      - nginx-network
+
+  openproject-db:
+    image: postgres:13
+    container_name: open-project-db
+    restart: always
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - open_project_db_data:/var/lib/postgresql/data
+    networks:
+      - nginx-network
+
+volumes:
+  open_project_data:
+    name: open_project_data
+  open_project_db_data:
+    name: open_project_db_data
+
+networks:
+  nginx-network:
+    external: true
